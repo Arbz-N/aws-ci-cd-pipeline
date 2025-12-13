@@ -1,7 +1,15 @@
 #!/bin/bash
-
 set -e
-echo "image is pulling"
-docker pull arbaznaeem/simple-python-flask-app
 
-docker run -d -p 5000:5000 arbaznaeem/simple-python-flask-app 
+APP_NAME=flask-app
+IMAGE=arbaznaeem/simple-python-flask-app
+PORT=5000
+
+echo "Pulling latest image..."
+docker pull $IMAGE
+
+echo "Starting new container..."
+docker run -d \
+  --name $APP_NAME \
+  -p $PORT:$PORT \
+  $IMAGE

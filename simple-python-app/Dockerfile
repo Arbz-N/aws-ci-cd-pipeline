@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.8
+FROM python:latest
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -20,4 +20,4 @@ EXPOSE 5000
 # ENV MY_ENV_VAR=value
 
 # Run the Flask application
-CMD ["python", "app.py"]
+CMD ["python", "file.py"]

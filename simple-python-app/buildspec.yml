@@ -1,30 +1,45 @@
-version: 0.2
+version: 0.2  # CodeBuild spec version
 
 env:
   parameter-store:
-    DOCKER_REGISTRY_USERNAME: /myapp/docker-credentials/username
-    DOCKER_REGISTRY_PASSWORD: /myapp/docker-credentials/password
-    DOCKER_REGISTRY_URL: /myapp/docker-registry/url
+    # AWS SSM Parameter Store se environment variables set ho rahe hain
+    DOCKER_REGISTRY_USERNAME: /simple-app/docker-credentials/username
+    DOCKER_REGISTRY_PASSWORD: /simple-app/docker-credentials/password
+    DOCKER_REGISTRY_URL: /simple-app/docker-registry/url
+
 phases:
   install:
     runtime-versions:
-      python: 3.11
+      python: latest  # Python runtime ka version set kar rahe hain
+    commands:
+      - echo "install phase started"          # Install phase start message
+      - echo "Runtime environment ready"     # Confirm runtime is ready
+
   pre_build:
     commands:
-      - echo "Installing dependencies..."
-      - pip install -r day-13/simple-python-app/requirements.txt
+      - echo "Pre-build phase started"       # Pre-build phase start message
+      - echo "Installing dependencies"      # Dependency install message
+      - pip install -r simple-python-app/requirements.txt     # Python dependencies install from requirements.txt
+
   build:
     commands:
-      - echo "Running tests..."
-      - cd day-13/simple-python-app/
-      - echo "Building Docker image..."
+      - cd simple-python-app/
+      - echo "Logging into Docker hub"      # Informational message
+      # Remove trailing newline from SSM parameter values (fix for Docker invalid tag error)
+      - DOCKER_REGISTRY_URL=$(echo "$DOCKER_REGISTRY_URL" | tr -d '\n')
+      - DOCKER_REGISTRY_USERNAME=$(echo "$DOCKER_REGISTRY_USERNAME" | tr -d '\n')
+      # Docker login using username/password from SSM securely
       - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+      # Build Docker image and tag it properly
       - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest" .
+      # Push Docker image to the registry
       - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest"
+
   post_build:
     commands:
-      - echo "Build completed successfully!"
+      - echo "Build is successful"          # Post-build confirmation message
+
 artifacts:
   files:
-    - '**/*'
-  base-directory: ../simple-python-app
+    - "**/*"              # Include all files and folders recursively from base-directory
+  base-directory: .       # Current directory of the repo as artifact root

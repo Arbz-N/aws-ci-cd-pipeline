@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-APP_NAME=flask-app
+APP_NAME=<CONTAINER_NAME>
 
 echo "Stopping old container if exists..."
 docker stop $APP_NAME || true
